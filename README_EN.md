@@ -17,12 +17,12 @@ flowchart TD
     A["&nbsp;Outline and task card&nbsp;"] --> B["&nbsp;Continuity context&nbsp;"]
     B --> C["&nbsp;Draft generation&nbsp;"]
     C --> D["&nbsp;Review and revision&nbsp;"]
-    D --> E["&nbsp;Transactional canonical commit&nbsp;"]
-    E --> F["&nbsp;Summary / Memory / Handoff&nbsp;"]
+    D --> E["&nbsp;Transactional<br/>canonical commit&nbsp;"]
+    E --> F["&nbsp;Summary / Memory /<br/>Handoff&nbsp;"]
     F --> G["&nbsp;Global continuity audit&nbsp;"]
     G --> H["&nbsp;Repair candidate&nbsp;"]
-    H --> I["&nbsp;Human approval or automatic commit&nbsp;"]
-    I --> J["&nbsp;State rebuild / rollback&nbsp;"]
+    H --> I["&nbsp;Human approval or<br/>automatic commit&nbsp;"]
+    I --> J["&nbsp;State rebuild<br/>/ rollback&nbsp;"]
 ```
 
 Its primary value is not necessarily better prose in a single generation. It makes a long-running production process easier to inherit, inspect, correct, and roll back safely.
@@ -103,16 +103,16 @@ The cross-chapter audit reads overlapping windows and focuses on:
 
 ```mermaid
 flowchart TD
-    A["&nbsp;Audit finding&nbsp;"] --> B["&nbsp;Evidence and affected scope&nbsp;"]
+    A["&nbsp;Audit finding&nbsp;"] --> B["&nbsp;Evidence and<br/>affected scope&nbsp;"]
     B --> C{"&nbsp;Repair size&nbsp;"}
     C -->|"&nbsp;Local&nbsp;"| D["&nbsp;Minimal text patch&nbsp;"]
-    C -->|"&nbsp;Structural&nbsp;"| E["&nbsp;Full-chapter candidate&nbsp;"]
+    C -->|"&nbsp;Structural&nbsp;"| E["&nbsp;Full-chapter<br/>candidate&nbsp;"]
     D --> F["&nbsp;Local validation&nbsp;"]
     E --> F
     F --> G["&nbsp;Joint review&nbsp;"]
     G --> H["&nbsp;Candidate and diff&nbsp;"]
     H --> I{"&nbsp;Commit decision&nbsp;"}
-    I -->|"&nbsp;Accept&nbsp;"| J["&nbsp;Replace Canon and rebuild state&nbsp;"]
+    I -->|"&nbsp;Accept&nbsp;"| J["&nbsp;Replace Canon and<br/>rebuild state&nbsp;"]
     I -->|"&nbsp;Reject&nbsp;"| K["&nbsp;Keep the original&nbsp;"]
 ```
 

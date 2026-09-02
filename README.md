@@ -18,10 +18,10 @@ flowchart TD
     B --> C["&nbsp;正文生成&nbsp;"]
     C --> D["&nbsp;Review 与修订&nbsp;"]
     D --> E["&nbsp;Canon 事务提交&nbsp;"]
-    E --> F["&nbsp;Summary / Memory / Handoff&nbsp;"]
+    E --> F["&nbsp;Summary / Memory /<br/>Handoff&nbsp;"]
     F --> G["&nbsp;全局一致性审计&nbsp;"]
     G --> H["&nbsp;修复候选&nbsp;"]
-    H --> I["&nbsp;人工确认或自动提交&nbsp;"]
+    H --> I["&nbsp;人工确认或<br/>自动提交&nbsp;"]
     I --> J["&nbsp;重建状态 / 可回滚&nbsp;"]
 ```
 
@@ -112,7 +112,7 @@ flowchart TD
     F --> G["&nbsp;联合复核&nbsp;"]
     G --> H["&nbsp;候选与 Diff&nbsp;"]
     H --> I{"&nbsp;提交决定&nbsp;"}
-    I -->|"&nbsp;确认&nbsp;"| J["&nbsp;覆盖 Canon 并重建状态&nbsp;"]
+    I -->|"&nbsp;确认&nbsp;"| J["&nbsp;覆盖 Canon 并<br/>重建状态&nbsp;"]
     I -->|"&nbsp;拒绝&nbsp;"| K["&nbsp;保留原文&nbsp;"]
 ```
 
