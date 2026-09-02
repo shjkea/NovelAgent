@@ -1,0 +1,54 @@
+# Local configuration and secrets
+config.json
+.env
+.env.*
+!.env.example
+*.dpapi
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Novel content and generated state
+chapters/
+plans/
+reviews/
+summaries/
+handoffs/
+reader_chapters/
+reports/
+archive/
+dlc/
+runtime/
+logs/
+novel_memory.sqlite3*
+state.json
+current_state.json
+*.candidate.md
+*.candidate.json
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest-tmp/
+pytest-cache-files-*
+.venv/
+venv/
+htmlcov/
+.coverage
+
+# IDE and operating system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local packages and backups
+*.7z
+*.zip
+*.tar
+*.tar.gz
+*.bak
+*.tmp
+*~

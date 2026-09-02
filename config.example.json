@@ -1,0 +1,395 @@
+{
+  "_migrations": {},
+  "title": "NovelAgent",
+  "embedding": {
+    "enabled": true,
+    "url": "http://127.0.0.1:8081/v1/embeddings",
+    "health_url": "http://127.0.0.1:8081/health",
+    "model": "novel-embed",
+    "top_k": 8,
+    "min_score": 0.38,
+    "query_instruction": "Retrieve novel continuity facts, character states, knowledge boundaries, timeline events, items, locations and unresolved hooks relevant to writing the next chapter."
+  },
+  "generation": {
+    "start_chapter": 1,
+    "chapters_per_run": 5,
+    "target_chapter_chars": 4500,
+    "recent_summary_count": 3,
+    "max_revision_rounds": 3,
+    "temperatures": {
+      "plan": 0.45,
+      "draft": 0.82,
+      "review": 0.18,
+      "revise": 0.55,
+      "memory": 0.15
+    },
+    "max_tokens": {
+      "plan": 1800,
+      "draft": 7000,
+      "review": 2600,
+      "revise": 7600,
+      "memory": 2600
+    }
+  },
+  "web": {
+    "host": "127.0.0.1",
+    "port": 7860,
+    "live_output_default": false
+  },
+  "embedding_server": {
+    "auto_start": false,
+    "llama_server_path": "C:\\llama.cpp\\llama-server.exe",
+    "model_path": "C:\\Models\\Qwen3-Embedding-0.6B\\Qwen3-Embedding-0.6B-Q8_0.gguf",
+    "host": "127.0.0.1",
+    "port": 8081,
+    "alias": "novel-embed",
+    "threads": 4,
+    "context": 32768,
+    "ubatch": 1024,
+    "pooling": "last"
+  },
+  "deepseek": {
+    "base_url": "https://api.deepseek.com",
+    "api_key_store": "runtime/deepseek_api_key.dpapi",
+    "retry_attempts": 4,
+    "min_thinking_max_tokens": 12000,
+    "empty_content_retries": 1,
+    "connect_timeout_seconds": 15,
+    "read_timeout_seconds": 300,
+    "max_request_seconds": 900,
+    "plan_reasoning_effort": "low",
+    "plan_length_retry_attempts": 1,
+    "plan_length_retry_max_tokens": 16000,
+    "source": "official",
+    "volcengine_agent_plan": {
+      "base_url": "https://ark.cn-beijing.volces.com/api/plan/v3",
+      "api_key_store": "runtime/volcengine_agent_plan_key.dpapi",
+      "active_slot": "1",
+      "api_slots": {
+        "1": {
+          "label": "API 1",
+          "api_key_store": "runtime/volcengine_agent_plan_key.dpapi"
+        },
+        "2": {
+          "label": "API 2",
+          "api_key_store": "runtime/volcengine_agent_plan_key_2.dpapi"
+        },
+        "3": {
+          "label": "API 3",
+          "api_key_store": "runtime/volcengine_agent_plan_key_3.dpapi"
+        },
+        "4": {
+          "label": "API 4",
+          "api_key_store": "runtime/volcengine_agent_plan_key_4.dpapi"
+        },
+        "5": {
+          "label": "API 5",
+          "api_key_store": "runtime/volcengine_agent_plan_key_5.dpapi"
+        }
+      }
+    },
+    "active_slot": "1",
+    "api_slots": {
+      "1": {
+        "label": "API 1",
+        "api_key_store": "runtime/deepseek_api_key.dpapi"
+      },
+      "2": {
+        "label": "API 2",
+        "api_key_store": "runtime/deepseek_api_key_2.dpapi"
+      },
+      "3": {
+        "label": "API 3",
+        "api_key_store": "runtime/deepseek_api_key_3.dpapi"
+      },
+      "4": {
+        "label": "API 4",
+        "api_key_store": "runtime/deepseek_api_key_4.dpapi"
+      },
+      "5": {
+        "label": "API 5",
+        "api_key_store": "runtime/deepseek_api_key_5.dpapi"
+      }
+    }
+  },
+  "grok": {
+    "base_url": "https://api.x.ai/v1",
+    "api_source": "xai",
+    "api_label": "xAI",
+    "api_key_store": "runtime/grok_api_key.dpapi",
+    "model": "grok-4.6",
+    "review_model": "grok-4.6",
+    "reasoning_effort": "low",
+    "review_reasoning_effort": "medium",
+    "send_reasoning_effort": true,
+    "send_response_format": true,
+    "send_stream_options": true,
+    "compatibility_fallback": true,
+    "retry_attempts": 3,
+    "connect_timeout_seconds": 15,
+    "read_timeout_seconds": 300,
+    "max_request_seconds": 900
+  },
+  "routing": {
+    "mode": "all_deepseek",
+    "stages": {
+      "plan": {
+        "provider": "deepseek",
+        "model": "deepseek-v4-pro",
+        "thinking": true,
+        "reasoning_effort": "high"
+      },
+      "draft": {
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "thinking": false
+      },
+      "review": {
+        "provider": "deepseek",
+        "model": "deepseek-v4-pro",
+        "thinking": true,
+        "reasoning_effort": "high"
+      },
+      "revision": {
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "thinking": false
+      },
+      "summary": {
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "thinking": false
+      },
+      "memory": {
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "thinking": false
+      }
+    },
+    "presets": {
+      "recommended": {
+        "plan": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-pro",
+          "thinking": true,
+          "reasoning_effort": "high"
+        },
+        "draft": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "thinking": false
+        },
+        "review": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-pro",
+          "thinking": true,
+          "reasoning_effort": "high"
+        },
+        "revision": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "thinking": false
+        },
+        "summary": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "thinking": false
+        },
+        "memory": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "thinking": false
+        }
+      },
+      "all_deepseek": {
+        "plan": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-pro",
+          "thinking": true
+        },
+        "draft": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "thinking": false
+        },
+        "review": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-pro",
+          "thinking": true
+        },
+        "revision": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "thinking": false
+        },
+        "summary": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "thinking": false
+        },
+        "memory": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "thinking": false
+        }
+      }
+    }
+  },
+  "context": {
+    "outline_neighbor_chapters": 3,
+    "plan_stage_lookbehind_chapters": 3,
+    "plan_stage_lookahead_chapters": 8,
+    "plan_stage_outline_max_chars": 18000,
+    "outline_legacy_max_chars": 24000,
+    "outline_range_overrides": []
+  },
+  "writing_guardrails": {
+    "enabled": true,
+    "task_card": true,
+    "provider_specific": true,
+    "major_drift_full_rewrite": true,
+    "revision_regression_retries": 1,
+    "plan_contract_check": true,
+    "plan_contract_retries": 2,
+    "plan_contract_check_retries": 1,
+    "plan_stage_contract_retries": 1,
+    "plan_stage_contract_model": "deepseek-v4-flash",
+    "plan_contract_check_model": "deepseek-v4-flash",
+    "silent_constraints": true,
+    "recent_fulltext_chapters": 3,
+    "recent_fulltext_max_chars": 30000,
+    "light_scene_sufficiency": true,
+    "soft_style_repetition": true,
+    "canon_commit_verification": true
+  },
+  "canon": {
+    "deepseek_only": true,
+    "stage_models": {
+      "plan": {
+        "model": "deepseek-v4-pro",
+        "thinking": true,
+        "reasoning_effort": "low"
+      },
+      "draft": {
+        "model": "deepseek-v4-flash",
+        "thinking": false,
+        "reasoning_effort": "low"
+      },
+      "review": {
+        "model": "deepseek-v4-flash",
+        "thinking": true,
+        "reasoning_effort": "low"
+      },
+      "deep_review": {
+        "model": "deepseek-v4-pro",
+        "thinking": true,
+        "reasoning_effort": "high"
+      },
+      "revision": {
+        "model": "deepseek-v4-flash",
+        "thinking": false,
+        "reasoning_effort": "low"
+      },
+      "summary": {
+        "model": "deepseek-v4-flash",
+        "thinking": false,
+        "reasoning_effort": "low"
+      },
+      "memory": {
+        "model": "deepseek-v4-flash",
+        "thinking": false,
+        "reasoning_effort": "low"
+      }
+    }
+  },
+  "dlc": {
+    "manual_only": true,
+    "provider": "grok",
+    "model": "grok-4.6",
+    "review_enabled": true,
+    "review_model": "grok-4.6",
+    "reasoning_effort": "low",
+    "review_reasoning_effort": "medium",
+    "temperature": 0.4,
+    "max_tokens": 3200,
+    "atlas_file": "prompts/expansion_reference.md",
+    "atlas_max_chars": 9000,
+    "character_max_chars": 12000,
+    "style_file": "style.md",
+    "style_max_chars": 7000,
+    "review_retry_count": 1
+  },
+  "cost_control": {
+    "profile": "enhanced",
+    "peak_warning": true,
+    "deep_review_on_risk": true,
+    "memory_mode": "deepseek",
+    "high_context_mode_enabled": false,
+    "high_context_target_tokens": 120000,
+    "high_context_max_tokens": 127000,
+    "plan_context_trim_enabled": true,
+    "plan_context_target_tokens": 30000,
+    "plan_context_safe_tokens": 31800,
+    "canon_context_trim_enabled": true,
+    "canon_context_safe_margin_tokens": 5000,
+    "canon_context_budgets": {
+      "draft": {
+        "normal": 40000,
+        "medium": 50000,
+        "complex": 62000
+      },
+      "review": {
+        "normal": 50000,
+        "medium": 65000,
+        "complex": 80000
+      },
+      "deep_review": {
+        "normal": 60000,
+        "medium": 75000,
+        "complex": 95000
+      },
+      "revision": {
+        "normal": 45000,
+        "medium": 58000,
+        "complex": 72000
+      }
+    },
+    "canon_context_min_state_rows": {
+      "draft": 16,
+      "review": 24,
+      "deep_review": 32,
+      "revision": 24
+    },
+    "chapter_complexity": {
+      "medium_score": 4,
+      "complex_score": 8,
+      "return_gap_chapters": 20,
+      "old_memory_chapters": 80,
+      "very_old_memory_chapters": 150
+    },
+    "plan_context_recovery_target_tokens": 42000,
+    "plan_context_recovery_max_tokens": 64000,
+    "chapter_cost_guard_mode": "afp",
+    "chapter_cost_guard_afp_limit": 45.0,
+    "chapter_cost_guard_cny_limit": 5.0,
+    "chapter_cost_guard_window_chapters": 10,
+    "chapter_cost_guard_confirm_at_chapters": 6
+  },
+  "continuity": {
+    "source_tail_chars": 2600,
+    "handoff_max_chars": 20000,
+    "recent_scene_limit": 10,
+    "ledger_prompt_max_chars": 14000,
+    "future_boundary_max_chars": 5000,
+    "audit_window_chapters": 4,
+    "audit_window_overlap": 1
+  },
+  "external_canon": {
+    "enabled": false,
+    "read_outline_markers": false,
+    "ranges": [],
+    "max_zip_bytes": 134217728,
+    "max_chapter_bytes": 2097152,
+    "max_total_bytes": 268435456
+  }
+}
