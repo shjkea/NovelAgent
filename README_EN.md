@@ -158,15 +158,15 @@ These scores summarize practical long-form use and are not a standardized model 
 
 | Dimension | Score |
 | --- | ---: |
-| Pipeline architecture | 8.5/10 |
-| Long-form continuity design | 8/10 |
-| Prose generation | 7.5/10 |
-| Automated review reliability | 6.5/10 |
-| Automated repair | 8/10 |
-| Data safety and rollback | 8.5/10 |
-| Runtime efficiency | 5.5/10 |
-| Unattended operation | 6/10 |
-| **Overall** | **7.5/10** |
+| Pipeline architecture | 7/10 |
+| Long-form continuity design | 6.5/10 |
+| Prose generation | 6/10 |
+| Automated review reliability | 5/10 |
+| Automated repair | 6.5/10 |
+| Data safety and rollback | 7/10 |
+| Runtime efficiency | 4/10 |
+| Unattended operation | 4.5/10 |
+| **Overall** | **6/10** |
 
 ## Quick start
 
