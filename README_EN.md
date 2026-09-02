@@ -14,15 +14,15 @@ A basic continuation workflow is usually just “load context → write the next
 
 ```mermaid
 flowchart TD
-    A["Outline and task card"] --> B["Continuity context"]
-    B --> C["Draft generation"]
-    C --> D["Review and revision"]
-    D --> E["Transactional canonical commit"]
-    E --> F["Summary / Memory / Handoff"]
-    F --> G["Global continuity audit"]
-    G --> H["Repair candidate"]
-    H --> I["Human approval or automatic commit"]
-    I --> J["State rebuild / rollback"]
+    A["&nbsp;Outline and task card&nbsp;"] --> B["&nbsp;Continuity context&nbsp;"]
+    B --> C["&nbsp;Draft generation&nbsp;"]
+    C --> D["&nbsp;Review and revision&nbsp;"]
+    D --> E["&nbsp;Transactional canonical commit&nbsp;"]
+    E --> F["&nbsp;Summary / Memory / Handoff&nbsp;"]
+    F --> G["&nbsp;Global continuity audit&nbsp;"]
+    G --> H["&nbsp;Repair candidate&nbsp;"]
+    H --> I["&nbsp;Human approval or automatic commit&nbsp;"]
+    I --> J["&nbsp;State rebuild / rollback&nbsp;"]
 ```
 
 Its primary value is not necessarily better prose in a single generation. It makes a long-running production process easier to inherit, inspect, correct, and roll back safely.
@@ -63,13 +63,13 @@ The memory layer is not an infallible source of truth. Some summaries, memories,
 
 ```mermaid
 flowchart LR
-    A["Story sources"] --> B["Plan"]
-    B --> C["Draft"]
-    C --> D["Review"]
-    D -->|"Issues"| E["Revision"]
+    A["&nbsp;Story sources&nbsp;"] --> B["&nbsp;Plan&nbsp;"]
+    B --> C["&nbsp;Draft&nbsp;"]
+    C --> D["&nbsp;Review&nbsp;"]
+    D -->|"&nbsp;Issues&nbsp;"| E["&nbsp;Revision&nbsp;"]
     E --> D
-    D -->|"Pass"| F["Final gate"]
-    F --> G["Canonical commit"]
+    D -->|"&nbsp;Pass&nbsp;"| F["&nbsp;Final gate&nbsp;"]
+    F --> G["&nbsp;Canonical commit&nbsp;"]
 ```
 
 1. **Prepare context:** load the chapter outline, story sources, recent prose, retrieved memories, previous handoff, and the current canonical ledger.
@@ -103,17 +103,17 @@ The cross-chapter audit reads overlapping windows and focuses on:
 
 ```mermaid
 flowchart TD
-    A["Audit finding"] --> B["Evidence and affected scope"]
-    B --> C{"Repair size"}
-    C -->|"Local"| D["Minimal text patch"]
-    C -->|"Structural"| E["Full-chapter candidate"]
-    D --> F["Local validation"]
+    A["&nbsp;Audit finding&nbsp;"] --> B["&nbsp;Evidence and affected scope&nbsp;"]
+    B --> C{"&nbsp;Repair size&nbsp;"}
+    C -->|"&nbsp;Local&nbsp;"| D["&nbsp;Minimal text patch&nbsp;"]
+    C -->|"&nbsp;Structural&nbsp;"| E["&nbsp;Full-chapter candidate&nbsp;"]
+    D --> F["&nbsp;Local validation&nbsp;"]
     E --> F
-    F --> G["Joint review"]
-    G --> H["Candidate and diff"]
-    H --> I{"Commit decision"}
-    I -->|"Accept"| J["Replace Canon and rebuild state"]
-    I -->|"Reject"| K["Keep the original"]
+    F --> G["&nbsp;Joint review&nbsp;"]
+    G --> H["&nbsp;Candidate and diff&nbsp;"]
+    H --> I{"&nbsp;Commit decision&nbsp;"}
+    I -->|"&nbsp;Accept&nbsp;"| J["&nbsp;Replace Canon and rebuild state&nbsp;"]
+    I -->|"&nbsp;Reject&nbsp;"| K["&nbsp;Keep the original&nbsp;"]
 ```
 
 - Audit findings become evidence-backed issue packets with an estimated affected range.

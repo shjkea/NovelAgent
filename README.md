@@ -14,15 +14,15 @@ NovelAgent 不只是把“大纲 + 前文”交给模型续写。它把长篇生
 
 ```mermaid
 flowchart TD
-    A["大纲与任务卡"] --> B["连续性上下文"]
-    B --> C["正文生成"]
-    C --> D["Review 与修订"]
-    D --> E["Canon 事务提交"]
-    E --> F["Summary / Memory / Handoff"]
-    F --> G["全局一致性审计"]
-    G --> H["修复候选"]
-    H --> I["人工确认或自动提交"]
-    I --> J["重建状态 / 可回滚"]
+    A["&nbsp;大纲与任务卡&nbsp;"] --> B["&nbsp;连续性上下文&nbsp;"]
+    B --> C["&nbsp;正文生成&nbsp;"]
+    C --> D["&nbsp;Review 与修订&nbsp;"]
+    D --> E["&nbsp;Canon 事务提交&nbsp;"]
+    E --> F["&nbsp;Summary / Memory / Handoff&nbsp;"]
+    F --> G["&nbsp;全局一致性审计&nbsp;"]
+    G --> H["&nbsp;修复候选&nbsp;"]
+    H --> I["&nbsp;人工确认或自动提交&nbsp;"]
+    I --> J["&nbsp;重建状态 / 可回滚&nbsp;"]
 ```
 
 它最有价值的地方不一定是“单次写得比最强模型更好”，而是让长期生产过程能够持续继承、定位问题、安全修正，并在修错时退回上一版。
@@ -63,13 +63,13 @@ NovelAgent 不把所有历史正文无限堆进 Prompt，而是把不同用途�
 
 ```mermaid
 flowchart LR
-    A["故事设定"] --> B["Plan"]
-    B --> C["Draft"]
-    C --> D["Review"]
-    D -->|"有问题"| E["Revision"]
+    A["&nbsp;故事设定&nbsp;"] --> B["&nbsp;Plan&nbsp;"]
+    B --> C["&nbsp;Draft&nbsp;"]
+    C --> D["&nbsp;Review&nbsp;"]
+    D -->|"&nbsp;有问题&nbsp;"| E["&nbsp;Revision&nbsp;"]
     E --> D
-    D -->|"通过"| F["Final Gate"]
-    F --> G["Canon Commit"]
+    D -->|"&nbsp;通过&nbsp;"| F["&nbsp;Final Gate&nbsp;"]
+    F --> G["&nbsp;Canon Commit&nbsp;"]
 ```
 
 1. **准备输入**：读取本章大纲、相关故事设定、最近正文、检索记忆、上一章 Handoff 和当前 Canon 账本。
@@ -103,17 +103,17 @@ Review 输出结构化严重程度、问题类型、证据和修订要求。明�
 
 ```mermaid
 flowchart TD
-    A["审计问题"] --> B["证据与影响范围"]
-    B --> C{"修复规模"}
-    C -->|"局部可修"| D["最小文本补丁"]
-    C -->|"结构性问题"| E["整章候选重写"]
-    D --> F["局部校验"]
+    A["&nbsp;审计问题&nbsp;"] --> B["&nbsp;证据与影响范围&nbsp;"]
+    B --> C{"&nbsp;修复规模&nbsp;"}
+    C -->|"&nbsp;局部可修&nbsp;"| D["&nbsp;最小文本补丁&nbsp;"]
+    C -->|"&nbsp;结构性问题&nbsp;"| E["&nbsp;整章候选重写&nbsp;"]
+    D --> F["&nbsp;局部校验&nbsp;"]
     E --> F
-    F --> G["联合复核"]
-    G --> H["候选与 Diff"]
-    H --> I{"提交决定"}
-    I -->|"确认"| J["覆盖 Canon 并重建状态"]
-    I -->|"拒绝"| K["保留原文"]
+    F --> G["&nbsp;联合复核&nbsp;"]
+    G --> H["&nbsp;候选与 Diff&nbsp;"]
+    H --> I{"&nbsp;提交决定&nbsp;"}
+    I -->|"&nbsp;确认&nbsp;"| J["&nbsp;覆盖 Canon 并重建状态&nbsp;"]
+    I -->|"&nbsp;拒绝&nbsp;"| K["&nbsp;保留原文&nbsp;"]
 ```
 
 - 审计结果先整理为带证据的问题包，并判断可能影响的章节范围。
