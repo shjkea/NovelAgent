@@ -14,15 +14,15 @@ A basic continuation workflow is usually just “load context → write the next
 
 ```mermaid
 flowchart TD
-    A[Outline and task card] --> B[Continuity context]
-    B --> C[Draft generation]
-    C --> D[Review and revision]
-    D --> E[Transactional canonical commit]
-    E --> F[Summary / Memory / Handoff]
-    F --> G[Global continuity audit]
-    G --> H[Repair candidate]
-    H --> I[Human approval or automatic commit]
-    I --> J[State rebuild / rollback]
+    A["Outline and task card"] --> B["Continuity context"]
+    B --> C["Draft generation"]
+    C --> D["Review and revision"]
+    D --> E["Transactional canonical commit"]
+    E --> F["Summary / Memory / Handoff"]
+    F --> G["Global continuity audit"]
+    G --> H["Repair candidate"]
+    H --> I["Human approval or automatic commit"]
+    I --> J["State rebuild / rollback"]
 ```
 
 Its primary value is not necessarily better prose in a single generation. It makes a long-running production process easier to inherit, inspect, correct, and roll back safely.
@@ -63,13 +63,13 @@ The memory layer is not an infallible source of truth. Some summaries, memories,
 
 ```mermaid
 flowchart LR
-    A[Story sources] --> B[Plan]
-    B --> C[Draft]
-    C --> D[Review]
-    D -->|Issues| E[Revision]
+    A["Story sources"] --> B["Plan"]
+    B --> C["Draft"]
+    C --> D["Review"]
+    D -->|"Issues"| E["Revision"]
     E --> D
-    D -->|Pass| F[Final gate]
-    F --> G[Canonical commit]
+    D -->|"Pass"| F["Final gate"]
+    F --> G["Canonical commit"]
 ```
 
 1. **Prepare context:** load the chapter outline, story sources, recent prose, retrieved memories, previous handoff, and the current canonical ledger.
@@ -103,17 +103,17 @@ The cross-chapter audit reads overlapping windows and focuses on:
 
 ```mermaid
 flowchart TD
-    A[Audit finding] --> B[Evidence and affected scope]
-    B --> C{Repair size}
-    C -->|Local| D[Minimal text patch]
-    C -->|Structural| E[Full-chapter candidate]
-    D --> F[Local validation]
+    A["Audit finding"] --> B["Evidence and affected scope"]
+    B --> C{"Repair size"}
+    C -->|"Local"| D["Minimal text patch"]
+    C -->|"Structural"| E["Full-chapter candidate"]
+    D --> F["Local validation"]
     E --> F
-    F --> G[Joint review]
-    G --> H[Candidate and diff]
-    H --> I{Commit decision}
-    I -->|Accept| J[Replace Canon and rebuild state]
-    I -->|Reject| K[Keep the original]
+    F --> G["Joint review"]
+    G --> H["Candidate and diff"]
+    H --> I{"Commit decision"}
+    I -->|"Accept"| J["Replace Canon and rebuild state"]
+    I -->|"Reject"| K["Keep the original"]
 ```
 
 - Audit findings become evidence-backed issue packets with an estimated affected range.
