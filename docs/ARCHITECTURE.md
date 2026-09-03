@@ -7,12 +7,12 @@
 ```mermaid
 flowchart TD
     UI["浏览器控制台"] --> API["FastAPI / app.py"]
-    API --> Core["NovelAgent / agent_core.py"]
-    Core --> Router["LLMRouter / provider_router.py"]
+    API --> Core["NovelAgent /<br/>agent_core.py"]
+    Core --> Router["LLMRouter /<br/>provider_router.py"]
     Router --> Providers["DeepSeek / 火山 / xAI"]
     Core --> Memory["MemoryDB / SQLite"]
-    Memory --> Embed["可选 llama-server embedding"]
-    Core --> Files["章节、摘要、交接、报告与归档"]
+    Memory --> Embed["可选 llama-server<br/>embedding"]
+    Core --> Files["章节、摘要、交接<br/>报告与归档"]
 ```
 
 Web 层只负责认证、参数校验、状态接口、文件导出和 SSE 事件流。章节生成、审查、修订、审计、回滚与外部 Canon 导入都由 `NovelAgent` 管理。模型访问统一经过 `LLMRouter`，核心逻辑不直接持有明文密钥。
@@ -21,14 +21,14 @@ Web 层只负责认证、参数校验、状态接口、文件导出和 SSE 事�
 
 ```mermaid
 flowchart TD
-    Input["设定、大纲、状态和历史"] --> Plan["Plan + 阶段合同"]
+    Input["设定、大纲、状态<br/>和历史"] --> Plan["Plan + 阶段合同"]
     Plan --> Draft["Draft"]
-    Draft --> Check["确定性检查 + 模型 Review"]
+    Draft --> Check["确定性检查<br/>+ 模型 Review"]
     Check -->|"需要修订"| Revise["Revision"]
     Revise --> Check
     Check -->|"通过"| Gate["最终质量门"]
     Gate --> Commit["事务式 Canon 提交"]
-    Commit --> Output["正文、摘要、Handoff、Memory、State"]
+    Commit --> Output["正文、摘要、Handoff<br/>Memory、State"]
 ```
 
 关键约束：

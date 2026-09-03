@@ -7,12 +7,12 @@
 ```mermaid
 flowchart TD
     UI["Browser dashboard"] --> API["FastAPI / app.py"]
-    API --> Core["NovelAgent / agent_core.py"]
-    Core --> Router["LLMRouter / provider_router.py"]
-    Router --> Providers["DeepSeek / Volcengine / xAI"]
+    API --> Core["NovelAgent /<br/>agent_core.py"]
+    Core --> Router["LLMRouter /<br/>provider_router.py"]
+    Router --> Providers["DeepSeek / Volcengine<br/>/ xAI"]
     Core --> Memory["MemoryDB / SQLite"]
-    Memory --> Embed["Optional llama-server embeddings"]
-    Core --> Files["Chapters, summaries, handoffs, reports, archives"]
+    Memory --> Embed["Optional llama-server<br/>embeddings"]
+    Core --> Files["Chapters, summaries,<br/>handoffs, reports,<br/>archives"]
 ```
 
 The web layer handles authentication, request validation, status endpoints, exports, and Server-Sent Events. `NovelAgent` owns generation, review, revision, auditing, rollback, and external canonical imports. All model traffic goes through `LLMRouter`; core logic does not hold plaintext credentials.
@@ -21,14 +21,14 @@ The web layer handles authentication, request validation, status endpoints, expo
 
 ```mermaid
 flowchart TD
-    Input["Story sources, state, and history"] --> Plan["Plan + stage contract"]
+    Input["Story sources, state,<br/>and history"] --> Plan["Plan + stage contract"]
     Plan --> Draft["Draft"]
-    Draft --> Check["Deterministic checks + model review"]
+    Draft --> Check["Deterministic checks<br/>+ model review"]
     Check -->|"Revision required"| Revise["Revision"]
     Revise --> Check
     Check -->|"Pass"| Gate["Final quality gate"]
-    Gate --> Commit["Transactional Canon commit"]
-    Commit --> Output["Chapter, summary, handoff, memory, state"]
+    Gate --> Commit["Transactional<br/>Canon commit"]
+    Commit --> Output["Chapter, summary,<br/>handoff, memory,<br/>state"]
 ```
 
 Important properties:
