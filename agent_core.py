@@ -12,7 +12,12 @@ from datetime import datetime
 from pathlib import Path
 from queue import Queue
 
-from memory_db import EmbeddingClient, MemoryDB
+from memory_db import (
+    EmbeddingClient,
+    MemoryDB,
+    STATE_KINDS,
+    normalize_memory_record,
+)
 from continuity import (
     adjacent_seams_covered,
     audit_windows,
@@ -2832,10 +2837,16 @@ REVISE 只用于实质问题；证据不足用 UNCERTAIN。"""
                     entries.append({"heading": names[0], "names": names, "text": block})
         return entries
 
-    def character_lock(self, n, task_card="", plan="", state_snapshot=None):
+    def character_lock(
+        self, n, task_card="", plan="",
+        state_snapshot=None, extra_focus=""
+    ):
         """Return a compact, late-position lock for characters involved this chapter."""
         focus = "\n".join(x for x in (
-            self.current_chapter_outline(n), task_card or "", plan or "",
+            self.current_chapter_outline(n),
+            task_card or "",
+            plan or "",
+            extra_focus or "",
         ) if x)
         if not focus.strip():
             return ""
@@ -3867,14 +3878,21 @@ REVISE 只用于实质问题；证据不足用 UNCERTAIN。"""
         st_snapshot = self.db.state_as_of(max(0, int(n-1)))
         state_text = self._format_state_snapshot(st_snapshot)
         memory_keep = len(memories)
-        character_lock = self.character_lock(n, task_card=task_card, state_snapshot=st_snapshot)
-        # character_lock already carries the relevant character cards. Sending
-        # the complete, ever-growing characters_seed.md again is redundant and
-        # was the main reason Plan crossed the expensive long-context tier.
-        plan_character_seed = (
-            "" if character_lock.strip()
-            else self.read_story('characters_seed.md')
+        character_lock = self.character_lock(
+            n,
+            task_card=task_card,
+            state_snapshot=st_snapshot,
+            extra_focus=seed_query,
         )
+        # Generic chapter outlines may contain no character names. Do not fall
+        # back to the complete cast file: handoff, Canon and ranked state already
+        # provide continuity, while matched character cards remain protected.
+        plan_character_seed = ""
+        if not character_lock.strip():
+            self.log(
+                "Plan 人物事实锁：当前任务、交接和最近摘要均未匹配明确人物；"
+                "使用 Canon/交接/相关状态，不注入完整 characters_seed.md。"
+            )
 
         system = """你是长篇小说章节规划师。第一职责是服从当前章节大纲与任务卡，第二职责是连续性，第三职责才是戏剧性。
 严格区分作者知道的信息与角色已经知道的信息。不得提前泄露尚未揭示的秘密。
@@ -5353,6 +5371,132 @@ severity=MINOR/MAJOR 的本地项目已有结构化账本或正文证据支持�
             return []
         return self.db.add_memories(records, n)
 
+    @staticmethod
+    def _key_semantic_label(key):
+        """Strip the canonical type prefix and punctuation from a state key."""
+        s = str(key or "").strip().lower()
+        if ":" in s:
+            s = s.split(":", 1)[1]
+        s = re.sub(r"[^0-9a-z\u4e00-\u9fff]+", " ", s)
+        return re.sub(r"\s+", " ", s).strip()
+
+    @staticmethod
+    def _key_labels_similar(a, b):
+        """Similarity gate for state-key retirement proposals."""
+        na, nb = (
+            NovelAgent._key_semantic_label(a),
+            NovelAgent._key_semantic_label(b),
+        )
+        if not na or not nb:
+            return False
+        if na == nb:
+            return True
+        if na in nb or nb in na:
+            return True
+        return difflib.SequenceMatcher(None, na, nb).ratio() >= 0.6
+
+    def _memory_state_registry(self, n, focus_text, max_chars=32000):
+        """
+        Collect existing stable state keys for entities appearing in the
+        current Canon text. Group keys by entity and state kind so the memory
+        model can reuse existing IDs instead of creating synonyms.
+        """
+        focus = str(focus_text or "")
+        snapshot = self.db.state_as_of(max(0, int(n) - 1))
+        rows = list(snapshot.get("states", []) or [])
+        rows += list(snapshot.get("hooks", []) or [])
+        if not rows:
+            return "（无现有状态键；新建 key 时请保持规范字段与稳定标识）"
+        groups = {}
+        for row in rows:
+            ent = str(row.get("entity", "") or "").strip()
+            kind = str(row.get("kind", "") or "").strip()
+            key = str(row.get("key", "") or "").strip()
+            if not ent or not key:
+                continue
+            if ent in focus:
+                groups.setdefault(ent, {}).setdefault(kind, []).append(key)
+        if not groups:
+            return "（当前正文未匹配到已有状态实体；新建 key 时请保持规范字段与稳定标识）"
+        lines = []
+        for ent in sorted(groups):
+            for kind in sorted(groups[ent]):
+                keys = sorted(set(groups[ent][kind]))
+                lines.append(f"- {ent} / {kind}: " + ", ".join(keys))
+        rendered = "\n".join(lines)
+        if len(rendered) > max_chars:
+            rendered = rendered[:max_chars].rstrip() + "\n…（注册表已截断）"
+        return rendered
+
+    def _validated_state_retirements(self, n, raw_groups, new_records):
+        """
+        Validate model-proposed alias merges. Only accept exact existing keys
+        with the same entity/kind, a valid surviving key and a sufficiently
+        similar key label. Return obsolete tombstone records.
+        """
+        if not isinstance(raw_groups, list):
+            return []
+        snapshot = self.db.state_as_of(max(0, int(n) - 1))
+        active = {}
+        for row in snapshot.get("states", []) or []:
+            ent = str(row.get("entity", "") or "").strip()
+            kind = str(row.get("kind", "") or "").strip()
+            key = str(row.get("key", "") or "").strip()
+            if not ent or not key:
+                continue
+            active.setdefault((ent, kind), set()).add(key)
+        # A kept key may be one the current chapter creates/updates.
+        created = {}
+        for raw in new_records or []:
+            if not isinstance(raw, dict):
+                continue
+            try:
+                norm = normalize_memory_record(raw)
+            except Exception:
+                continue
+            ent = str(norm.get("entity", "") or "").strip()
+            kind = str(norm.get("kind", "") or "").strip()
+            key = str(norm.get("key", "") or "").strip()
+            if not ent or not key:
+                continue
+            created.setdefault((ent, kind), set()).add(key)
+
+        tombs = []
+        for group in raw_groups:
+            if not isinstance(group, dict):
+                continue
+            kind = str(group.get("kind", "") or "").strip()
+            entity = str(group.get("entity", "") or "").strip()
+            keep_key = str(group.get("keep_key", "") or "").strip()
+            retire_keys = group.get("retire_keys")
+            if kind not in STATE_KINDS or not entity or not keep_key:
+                continue
+            if not isinstance(retire_keys, list):
+                continue
+            marker = (entity, kind)
+            if (keep_key not in active.get(marker, set())
+                    and keep_key not in created.get(marker, set())):
+                continue
+            for old_key in retire_keys:
+                old_key = str(old_key or "").strip()
+                if not old_key or old_key == keep_key:
+                    continue
+                if old_key not in active.get(marker, set()):
+                    continue
+                if not self._key_labels_similar(keep_key, old_key):
+                    continue
+                tombs.append({
+                    "kind": kind,
+                    "entity": entity,
+                    "key": old_key,
+                    "content": f"(状态键维护：{old_key} 已并入保留键 {keep_key})",
+                    "importance": 1,
+                    "status": "obsolete",
+                })
+                if len(tombs) >= 80:
+                    return tombs
+        return tombs
+
     def summarize_and_extract_memories(self, n, final):
         """Build Summary, Memory candidates, and Handoff in one Flash request."""
         self._stage(n, "摘要 + 记忆 + 交接", f"一次整理第 {n} 章摘要、长期记忆与交接")
@@ -5367,6 +5511,14 @@ severity=MINOR/MAJOR 的本地项目已有结构化账本或正文证据支持�
 {
   "summary": "结构化章节摘要",
   "memories": [ ... ],
+  "state_retirements": [
+    {
+      "kind": "character_state",
+      "entity": "人物",
+      "keep_key": "继续保留的精确key",
+      "retire_keys": ["待退休的精确key"]
+    }
+  ],
   "handoff": {
     "chapter_no": 1,
     "structured_complete": true,
@@ -5405,6 +5557,10 @@ memories 中每条必须是一个原子事实。kind 只能使用：character_st
 - event/fact: entity, key, content
 每条都含 importance 1-5；非 hook 默认 status=active。
 稳定标识应短、语义固定。
+state_retirements 是状态键维护指令，只用于合并“同义或已被替代”的旧 key：
+- 只能引用【现有状态键注册表】中出现、或本章 memories 新建的精确 key，且保持同一 kind 与 entity；keep_key 为继续保留的精确 key，retire_keys 为待退休的精确 key。
+- 同一状态维度必须优先复用已有 key，禁止仅为换措辞而新建同义 key。
+- 每章最多退休 80 个 key；历史记录不会删除，只会以 obsolete 状态退出活动账本。
 DLC_SCENE 标记和 DLC 文件均不是 Canon 事实，不得写入 summary 或 memories。
 
 信息密度规则：
@@ -5430,9 +5586,13 @@ handoff 是独立短期交接层，不能用 summary 代替：
 - evidence_claims 必须区分观测和结论；一次或单条样本不能标为CONFIRMED，也不能写成排除因果。
 - scene_signatures 至少一条，记录主要场景的地点、人物、进入原因、道具、互动节拍、结果和是否关闭；不要把普通修辞当道具。
 """
+        state_registry = self._memory_state_registry(n, canon_text)
         user = f"""请整理第{n}章。
 【第{n}章 Canon 正文】
 {canon_text}
+
+【本章涉及实体的现有状态键注册表】
+{state_registry}
 
 【作者给出的后续任务边界】
 {self.future_task_boundary(n)}
@@ -5494,6 +5654,7 @@ handoff 是独立短期交接层，不能用 summary 代替：
         data = _json_obj(raw, {})
         summary = data.get("summary", "") if isinstance(data, dict) else ""
         records = data.get("memories", []) if isinstance(data, dict) else []
+        raw_retirements = data.get("state_retirements") if isinstance(data, dict) else None
         raw_handoff = data.get("handoff") if isinstance(data, dict) else None
         if not isinstance(summary, str) or not summary.strip() or not isinstance(records, list):
             reason = "摘要+记忆+交接 JSON 解析失败"
@@ -5515,6 +5676,15 @@ handoff 是独立短期交接层，不能用 summary 代替：
             keep_idx = {i for i, _ in indexed[:12]}
             records = [item for i, item in enumerate(records) if i in keep_idx]
             self.log("摘要+记忆返回超过 12 条长期记忆，已按 importance 保留最高价值 12 条。")
+        retirements = self._validated_state_retirements(
+            n, raw_retirements, records
+        )
+        if retirements:
+            records.extend(retirements)
+            self.log(
+                f"状态键维护：Agent 合并并退休 "
+                f"{len(retirements)} 个同义或被替代 key。"
+            )
         if len(summary) > 1800:
             self.log(f"章节摘要偏长（{len(summary)} 字符）；已保留完整摘要，不做机械截断。")
         handoff_error = ""

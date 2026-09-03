@@ -256,6 +256,14 @@ class MemoryDB:
                     UPDATE memories SET active=0, status='superseded', updated_at=?
                     WHERE active=1 AND kind=? AND entity=? AND key_name=?
                 """, (now, kind, entity, key_name))
+            elif not active and kind in STATE_KINDS and entity and key_name:
+                # Terminal tombstone (resolved/obsolete/inactive): deactivate the
+                # previously active record so the key leaves the live ledger while
+                # its history stays intact.
+                c.execute("""
+                    UPDATE memories SET active=0, status='superseded', updated_at=?
+                    WHERE active=1 AND kind=? AND entity=? AND key_name=?
+                """, (now, kind, entity, key_name))
             if status == "resolved" and kind == "hook":
                 if entity or key_name:
                     c.execute("""
