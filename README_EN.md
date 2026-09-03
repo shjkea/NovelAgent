@@ -27,6 +27,19 @@ flowchart TD
 
 Its primary value is not necessarily better prose in a single generation. It makes a long-running production process easier to inherit, inspect, correct, and roll back safely.
 
+## Real-world runs and architectural evolution
+
+NovelAgent was not designed once as a demonstration project. Its architecture was progressively rebuilt through real long-form production. Each of the four stages addressed a different class of failure:
+
+| Stage | Production history and major changes | Problems exposed and subsequent direction |
+| --- | --- | --- |
+| **Early chapter pipeline** | Completed a continuous production run of approximately **1,000 chapters**, demonstrating the basic feasibility of connecting Plan, Draft, Review, Revision, Summary, and Memory into a long-form workflow. | Long runs gradually exposed memory pollution, state drift, context growth, accumulated continuity errors, and insufficient crash recovery. The ability to generate the next chapter did not guarantee consistency across the whole work. |
+| **Long-form capability expansion** | Added task cards, chapter-scoped outline selection, historical state reconstruction, structured review, cross-chapter audits, batch repair, rollback, and Canon/DLC isolation, then completed another **100+ chapter production run**. | The system became substantially more capable, but prose and derived data were still written in separate steps. Review focused mainly on macro-level plot and cross-chapter continuity, and the last revision round could still escape complete re-review. |
+| **First architectural redesign** | Reorganized generation around stage contracts, Plan validation, a final quality gate, and stricter chapter handoffs. It also attempted to eliminate the recurring diary-like pattern of “date-stamped opening, full daily routine, nighttime ending.” | Production testing exposed new blind spots: stage contracts could degrade silently; Plans could obey the outline without testing feasibility or data sufficiency; outline completion could override causal validity; correlated reviews could repeat the same false negative; intra-chapter numbers, time, item ownership, action order, and evidence-to-conclusion logic lacked an independent gate; and a weak review could prevent a stronger review from ever running. Excessive prompt constraints also encouraged the model to mechanically prove compliance, making prose formulaic. |
+| **Current transactional architecture** | Added contract-entry validation and retries, consistent Plan score semantics, event-based chapter cut points, diary-pattern detection, intra-chapter factual and reasoning checks, strong-model review by default, re-review after every revision, candidate isolation, structured handoffs, a canonical ledger, transactional commits, and crash recovery. It has completed another **100+ chapter continuous-generation test**. | The engineering target has shifted from merely sustaining generation to preserving long-term consistency without sacrificing character voice or natural narrative form. Automated review can still miss or overstate problems, so the author retains final control over canonical commits. |
+
+These figures describe completed production runs. They do not claim that every chapter was error-free or required no human supervision, and they are not a standardized model-quality benchmark.
+
 ## Highlights
 
 - Plan, Draft, Review, Revision, Summary, and Memory stages
@@ -78,6 +91,8 @@ flowchart LR
 4. **Review:** inspect plot drift, continuity, character behavior, knowledge, world rules, repetition, style, and chapter logic.
 5. **Revision:** address blocking findings. Revised prose must pass review again and cannot bypass the quality gate.
 6. **Canonical commit:** once approved, commit the prose together with its summary, memory updates, handoff, and state snapshot.
+
+> **Rules-heavy scenes require a detailed outline.** For esports matches, sporting events, tactical encounters, investigative procedures, or other scenes with explicit rules and state transitions, a directional goal such as “Team A wins” is not enough. The Outline should lock down the format, participants, score, map order, bans and picks, heroes or lineups, substitutions, decisive rounds, and final result. NovelAgent is better used to dramatize a well-specified sequence than to invent an entire professional ruleset and keep every generated detail consistent over a long run.
 
 ### 3. How review works
 
@@ -149,6 +164,7 @@ When an early chapter changes, downstream summaries and interpretations may not 
 - Repairing an earlier chapter does not guarantee that every downstream interpretation is reconstructed.
 - Continuity detection still mixes real problems, weakly supported findings, and false positives. Detection is currently less reliable than repair.
 - The system is better at respecting constraints than automatically producing pacing, suspense, character tension, or a distinctive prose style.
+- Rules-heavy material such as esports, sports, and tactical competition depends heavily on a detailed outline. With only a directional goal, the model may invent formats, scores, maps, lineups, or decisive events that later contradict one another.
 - Many interacting states make retries, apparent stalls, and stale UI status possible.
 - Program files and working data are not yet fully separated, so upgrades require careful backups.
 
@@ -189,7 +205,7 @@ Before generating chapters, replace the examples in:
 - `story/premise.md`: premise and central conflict
 - `story/world.md`: world rules
 - `story/characters_seed.md`: initial character state
-- `story/outline.md`: chapter outline
+- `story/outline.md`: chapter outline; lock down scores, maps, lineups, bans and picks, decisive events, and outcomes for rules-heavy scenes
 - `story/style.md`: voice, viewpoint, and prohibited patterns
 
 The embedding service does not auto-start by default. To enable vector memory, configure the `llama-server` and GGUF embedding model paths in `config.json`, then enable `embedding_server.auto_start`. SQLite and full-text retrieval still work without it, with reduced semantic recall.
@@ -219,6 +235,10 @@ Current public test suite: `500 passed`.
 ## Project status
 
 NovelAgent is an evolving personal engineering project and does not currently promise API stability. Test new releases on a copy before migrating an active long-form project.
+
+## DLC
+
+DLC is an optional expansion channel isolated from the main Canon. It can use a local model or Grok for scenes that the primary writing model may be constrained from handling or may not handle well. DLC content does not automatically enter Summary, Memory, or current state; the author decides separately whether to use it.
 
 ## AI generation disclosure
 
